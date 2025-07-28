@@ -10,7 +10,9 @@ from establish import *
 list_partners = models.execute_kw(
     db, uid, password,
     'res.partner', 'search',
-    [[]],  # sin filtros
+    [[  ['comment', 'ilike', 'try']#,
+        #['name', 'ilike', 'Iñaki']
+    ]],  # sin filtros
 )
 
 partners = models.execute_kw(db, uid, password,

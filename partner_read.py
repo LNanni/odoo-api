@@ -7,7 +7,7 @@ Importante filtrar los campos, sino falla por falta de permisos (Aun siendo admi
 """
 
 [partner] = models.execute_kw(db, uid, password, 
-    'res.partner', 'read', [[16]], {'fields': ['id', 'name', 'email', 'phone', 'vat']})
+    'res.partner', 'read', [[16]], {'fields': ['id', 'name', 'email', 'phone', 'vat', 'comment']})
 
 
 print(partner)
