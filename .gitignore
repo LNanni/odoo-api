@@ -7,3 +7,5 @@ include/
 lib/
 lib64
 connection.py
+.venv/
+.env
