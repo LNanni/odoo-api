@@ -8,4 +8,13 @@ def create_app():
 
     CORS(app)
 
+    register_blueprints(app)
+
     return app
+
+def register_blueprints(app):
+    # Importar blueprints
+    from app.routes.partners_routes import bp as partners_bp
+    
+    # Registrar blueprints
+    app.register_blueprint(partners_bp)

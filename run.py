@@ -10,9 +10,9 @@ def main():
     app = create_app()
     
     # Configuración del servidor
-    host = os.getenv('HOST', '127.0.0.1')
-    port = int(os.getenv('PORT', 5000))
-    debug = os.getenv('DEBUG', 'True').lower() == 'true'
+    host = os.getenv('HOST')
+    port = int(os.getenv('PORT'))
+    debug = os.getenv('DEBUG').lower() == 'true'
     
     print(f"Iniciando servidor Flask Odoo API...")
     print(f"Host: {host}")

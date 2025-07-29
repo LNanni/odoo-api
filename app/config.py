@@ -8,13 +8,13 @@ class Config:
     """Configuración base para la aplicación Flask"""
     
     # Configuración de Flask
-    SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
-    DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
+    SECRET_KEY = os.getenv('SECRET_KEY')
+    DEBUG = os.getenv('DEBUG').lower() == 'true'
     TESTING = False
     
     # Configuración del servidor
-    HOST = os.getenv('HOST', '127.0.0.1')
-    PORT = int(os.getenv('PORT', 5000))
+    HOST = os.getenv('HOST')
+    PORT = int(os.getenv('PORT'))
     
     # Configuración de Odoo
     ODOO_URL = os.getenv('ODOO_URL')
