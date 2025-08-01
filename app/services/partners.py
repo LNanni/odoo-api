@@ -29,4 +29,4 @@ class PartnerService(FatherService):
             return list_partners
         except Exception as e:
             print(e)
-            return ["Error"]
+            return ["Error: " + str(e)]

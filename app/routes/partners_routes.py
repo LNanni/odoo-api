@@ -14,11 +14,11 @@ def getAllPartners():
                 "status": "error",
                 "message": partners[0].split(": ")[1]
             }
-        )
+        ), 401
     else:
         return jsonify(
             {
                 "status": "success",
                 "clients": partners,
                 "length": len(partners)
-            })  
+            }), 200  
