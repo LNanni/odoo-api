@@ -1,8 +1,7 @@
 import xmlrpc.client
 import os
 from dotenv import load_dotenv
-from models.endpoint import models
-from models.establish import *
+from app.models.endpoint import *
 
 load_dotenv()
 
@@ -15,8 +14,14 @@ class PartnerService:
 
     def getPartnersList(self):
         try:
+            # Primero autenticar para obtener el uid
+            uid = common.authenticate(self._Db, self._Username, self._Password, {})
+            if not uid:
+                return ["Error: Autenticación fallida"]
+            
+            # Ahora usar el uid para ejecutar la consulta
             list_partners = models.execute_kw(
-                self._Db, self._Username, self._Password,
+                self._Db, uid, self._Password,
                 'res.partner', 'search',
                 [[  #['comment', 'ilike', 'try'],
                     #['name', 'ilike', 'Iñaki']
@@ -26,4 +31,4 @@ class PartnerService:
             return list_partners
         except Exception as e:
             print(e)
-            return []
+            return ["Error"]
