@@ -7,5 +7,18 @@ bp = Blueprint('partners', __name__, url_prefix='/api/partners')
 @bp.route('/', methods=['GET'])
 def getAllPartners():
     partnerService = PartnerService()
-    partners = partnerService.getPartnersList()
-    return jsonify(partners)
+    partners = partnerService.getAllPartners()
+    if "Error" in partners[0]:
+        return jsonify(
+            {
+                "status": "error",
+                "message": partners[0].split(": ")[1]
+            }
+        )
+    else:
+        return jsonify(
+            {
+                "status": "success",
+                "clients": partners,
+                "length": len(partners)
+            })  

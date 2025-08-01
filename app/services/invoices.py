@@ -1,32 +1,27 @@
 import xmlrpc.client
 import os
-from dotenv import load_dotenv
 from app.models.endpoint import *
 from app.services.fatherService import FatherService
+from dotenv import load_dotenv
 
 load_dotenv()
 
-class PartnerService(FatherService):
+class InvoiceService(FatherService):
     def __init__(self):
         super().__init__()
 
-    def getAllPartners(self):
+    def getInvoicesList(self):
         try:
-            # Primero autenticar para obtener el uid
             uid = common.authenticate(self._Db, self._Username, self._Password, {})
             if not uid:
                 return ["Error: Autenticacion fallida"]
             
-            # Ahora usar el uid para ejecutar la consulta
-            list_partners = models.execute_kw(
+            list_invoices = models.execute_kw(
                 self._Db, uid, self._Password,
-                'res.partner', 'search_read',
+                'account.move', 'search',
                 [[  #['comment', 'ilike', 'try'],
                 ]],  # sin filtros
-                {'fields': ['name', 'phone', 'email', 'comment']}
             )
-
-            return list_partners
+            return list_invoices
         except Exception as e:
-            print(e)
-            return ["Error"]
+            return ["Error: " + str(e)]
