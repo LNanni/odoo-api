@@ -8,7 +8,6 @@ load_dotenv()
 def main():
     # Crear la aplicación Flask
     app = create_app()
-    
     # Configuración del servidor
     host = os.getenv('HOST')
     port = int(os.getenv('PORT'))
@@ -26,7 +25,7 @@ def main():
             host=host,
             port=port,
             debug=debug,
-            use_reloader=debug
+            use_reloader=False  # Deshabilitar reloader para evitar problemas de threading
         )
     except KeyboardInterrupt:
         print("\nServidor detenido por el usuario")
