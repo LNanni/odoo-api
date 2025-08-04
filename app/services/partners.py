@@ -12,9 +12,9 @@ class PartnerService(FatherService):
 
     def getAllPartners(self):
         try:
-            # Primero autenticar para obtener el uid
-            uid = common.authenticate(self._Db, self._Username, self._Password, {})
-            if not uid:
+            uid = super().authenticate()
+            
+            if(type(uid) != int and "Autenticacion" in uid):
                 return ["Error: Autenticacion fallida"]
             
             # Ahora usar el uid para ejecutar la consulta

@@ -14,7 +14,9 @@ def create_app():
 
 def register_blueprints(app):
     # Importar blueprints
-    from app.routes.partners_routes import bp as partners_bp
+    from app.routes.partnersController import bp as partners_bp
+    from app.routes.invoicesController import bp as invoices_bp
     
     # Registrar blueprints
     app.register_blueprint(partners_bp)
+    app.register_blueprint(invoices_bp)

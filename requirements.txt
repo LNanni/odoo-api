@@ -36,10 +36,10 @@ flake8==6.1.0
 isort==5.12.0
 
 # Documentación de API
-flasgger==0.9.7.1
+#flasgger==0.9.7.1
 
 # Monitoreo y métricas
-prometheus-flask-exporter==0.23.0
+#prometheus-flask-exporter==0.23.0
 
 # Cache (opcional)
 #Flask-Caching==2.1.0
