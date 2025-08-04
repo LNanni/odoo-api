@@ -18,7 +18,7 @@ class PartnerService(FatherService):
                 return ["Error: Autenticacion fallida"]
             
             # Ahora usar el uid para ejecutar la consulta
-            list_partners = models.execute_kw(
+            listPartners = models.execute_kw(
                 self._Db, uid, self._Password,
                 'res.partner', 'search_read',
                 [[  #['comment', 'ilike', 'try'],
@@ -26,7 +26,29 @@ class PartnerService(FatherService):
                 {'fields': ['name', 'phone', 'email', 'comment']}
             )
 
-            return list_partners
+            return listPartners
         except Exception as e:
-            print(e)
             return ["Error: " + str(e)]
+
+    def getPartnerByName(self, name):
+        try:
+            uid = super().authenticate()
+
+            if(type(uid) != int and "Autenticacion" in uid):
+                return ["Error: Autenticacion fallida"]
+
+            listPartners = models.execute_kw(
+                    self._Db, uid, self._Password,
+                    'res.partner', 'search_read',
+                    [[  
+                        ['name', 'ilike', name],
+                    ]],  
+                    {'fields': ['id', 'name']}
+                )
+
+            if len(listPartners) == 1:
+                return listPartners[0]
+            else: 
+                return ["Error: Partner no encontrado"]
+        except Exception as e:
+            return ["Error: "+ str(e)]
