@@ -3,7 +3,7 @@ from flask import jsonify
 from app.models.endpoint import *
 from app.services.fatherService import FatherService
 from app.services.partners import PartnerService
-#from app.clients.mikrowisp import MikrowispClient
+from app.clients.mikrowisp import MikrowispClient
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -36,11 +36,12 @@ class InvoiceService(FatherService):
             if (type(uid) != int and "Autenticacion" in uid):
                 return ["Error: Autenticacion fallida"]
 
-            invoiceList = []#MikrowispClient.getAllInvoices()
+            mkwClient = MikrowispClient()
+            mkwInvoices = mkwClient.getInvoices()
 
-            for invoice in invoiceList:
+            for invoice in mkwInvoices:
                 partnerService = PartnerService()
-                partnerId = partnerService.getPartnerByName(invoice.nombre)
+                partnerId = partnerService.getPartnerByName(invoice.get('nombre'))
 
                 if(type(partnerId) is str):
                     print("Partner not found: ", invoice.nombre)
@@ -75,7 +76,7 @@ class InvoiceService(FatherService):
                             'invoice_date_due': invoice.vencimiento,
                             'invoice_date': invoice.emitido,       #Repetir date
                             'l10n_latam_document_type_id': 6 if invoice.tipo == "Servicios" else 1,   #1 es Factura A, 6 es Factura B
-                            'l10n_latam_document_number': str.join('0001-',) if invoiceList.invoiceType == "A" else '0002-',     #0001 para Factura A, 0002 para Factura B. Repetir número de la factura
+                            'l10n_latam_document_number': f'0001-{invoice.nfactura}' if invoice.tipo == "Servicios" else f'0002-{invoice.nfactura}',     #0001 para Factura A, 0002 para Factura B. Repetir número de la factura
                             'sequence_number': 3232,
                             'invoice_line_ids': [
                                 (0, 0, linesIds)
@@ -84,5 +85,9 @@ class InvoiceService(FatherService):
                     )
                 except Exception as e:
                     print(str(e))
+            return {
+                "status": "success",
+                "message": f"Se han creado {len(mkwInvoices)} facturas exitosamente"
+            }
         except Exception as e:
-            return ["Error: " + str(e)]
+            return {"error": str(e)}

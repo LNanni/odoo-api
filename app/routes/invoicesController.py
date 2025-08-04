@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from app.services.invoices import InvoiceService
+from app.clients.mikrowisp import MikrowispClient
 
 # Crear blueprint para partners
 bp = Blueprint('invoices', __name__, url_prefix='/api/invoices')
@@ -26,3 +27,15 @@ def getAllInvoices():
                 "clients": data,
                 "length": len(data)
             }), 200  
+
+@bp.route('/', methods=['POST'])
+def createInvoices():
+    invoiceService = InvoiceService()
+    data = invoiceService.createInvoices()
+    if isinstance(data, dict) and data.get('status') == 'success':
+        return jsonify(data), 201
+    else:
+        return jsonify({
+            "status": "error",
+            "message": data.get('error')
+        }), 500
