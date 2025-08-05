@@ -1,3 +1,4 @@
+from typing import Any, Dict
 import xmlrpc.client
 import os
 from dotenv import load_dotenv
@@ -52,3 +53,39 @@ class PartnerService(FatherService):
                 return ["Error: Partner no encontrado"]
         except Exception as e:
             return ["Error: "+ str(e)]
+
+    def createParner(self, body: Dict[str, Any]):
+        try:
+            uid = super().authenticate()
+            partnerCreated = models.execute_kw(
+                    self._Db, uid, self._Password,
+                    'res.partner', 'create',
+                    [{
+                        "vat_label": body.get('id_label'),
+                        "company_type": body.get('company_type'),
+                        "name": body.get('name'),
+                        "email": body.get('email'),
+                        "phone": body.get('phone'),
+                        "type_address_label": "Dirección",
+                        "street": body.get('location'),
+                        "city": body.get('city'),
+                        "state_id": 570,
+                        "zip": body.get('cp'),
+                        "country_id": 10,
+                        "partner_vat_placeholder": "20055361682, o no aplicable",
+                        "l10n_latam_identification_type_id": 6,
+                        "vat": body.get('cuil'),
+                        "lang": "es_ES",
+                        "property_product_pricelist": 1,
+                        "industry_id": False,
+                        "is_company": False,
+                        "active": True,
+                        "type": "contact",
+                        "fiscal_country_codes": "AR",
+                        "active_lang_count": 1,
+                        "display_name": body.get('name')
+                    }]
+                )
+            return {"status": "Succes"}
+        except Exception as e:
+            return {"status": "error", "message": str(e)}

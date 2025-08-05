@@ -38,21 +38,20 @@ class InvoiceService(FatherService):
 
             mkwClient = MikrowispClient()
             mkwInvoices = mkwClient.getInvoices()
-
             for invoice in mkwInvoices:
                 partnerService = PartnerService()
                 partnerId = partnerService.getPartnerByName(invoice.get('nombre'))
 
-                if(type(partnerId) is str):
-                    print("Partner not found: ", invoice.nombre)
+                if(type(partnerId) is list and 'Error' in partnerId[0]):
+                    print("Partner no encontrado: ", invoice.get('nombre'))
                     continue
 
                 linesIds = []
                 for item in invoice:
                     linesIds.append(jsonify({
-                        'name': item.descripcion,
-                        'quantity': item.unidades,
-                        'price_unit': item.cantidad,
+                        'name': item.get('descripcion'),
+                        'quantity': item.get('unidades'),
+                        'price_unit': item.get('cantidad'),
                         'account_id': 1891,
                         'currency_id': 19,
                         'move_type': 'in_invoice',
@@ -65,18 +64,18 @@ class InvoiceService(FatherService):
                         'account.move', 'create',
                         [{
                             'partner_id': 1,        # Dependera si es proveedor o cliente
-                            'ref': invoice.nfactura,
+                            'ref': invoice.get('nfactura'),
                             'currency_id': 19,      # 19 es ARS
-                            'date': invoice.emitido,
+                            'date': invoice.get('emitido'),
                             'journal_id': 18,           # 18 es para Compras (18) o Ventas (17)
                             'move_type': 'in_invoice',  #in_invoice o out_invoice
                             'state': 'draft',           #No se permite crear directamente en posted
-                            'name': invoice.nombre,
-                            'display_name': invoice.nombre,    #Repetir nombre de la factura
-                            'invoice_date_due': invoice.vencimiento,
-                            'invoice_date': invoice.emitido,       #Repetir date
-                            'l10n_latam_document_type_id': 6 if invoice.tipo == "Servicios" else 1,   #1 es Factura A, 6 es Factura B
-                            'l10n_latam_document_number': f'0001-{invoice.nfactura}' if invoice.tipo == "Servicios" else f'0002-{invoice.nfactura}',     #0001 para Factura A, 0002 para Factura B. Repetir número de la factura
+                            'name': invoice.get('nombre'),
+                            'display_name': invoice.get('nombre'),    #Repetir nombre de la factura
+                            'invoice_date_due': invoice.get('vencimiento'),
+                            'invoice_date': invoice.get('emitido'),       #Repetir date
+                            'l10n_latam_document_type_id': 6 if invoice.get('tipo') == "Servicios" else 1,   #1 es Factura A, 6 es Factura B
+                            'l10n_latam_document_number': f'0001-{invoice.get('nfactura')}' if invoice.get('tipo') == "Servicios" else f'0002-{invoice.get('nfactura')}',     #0001 para Factura A, 0002 para Factura B. Repetir número de la factura
                             'sequence_number': 3232,
                             'invoice_line_ids': [
                                 (0, 0, linesIds)

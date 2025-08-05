@@ -56,3 +56,27 @@ def getPartnerByName():
             "status": "success",
             "client": data
         }), 200
+
+@bp.route('/', methods=['POST'])
+def createPartner():
+    partnerService = PartnerService()
+    partnerData = request.get_json()
+    
+    if not partnerData:
+        return jsonify({
+            "status": "error",
+            "message": "Datos JSON requeridos"
+        }), 400
+    
+    result = partnerService.createParner(partnerData)
+    print(result)
+    if "error" in result.get('status'):
+        if "solicitar acceso" in result.get('message'):
+            return result, 401
+        else:
+            return result, 500
+    else:
+        return jsonify({
+            "status": "success",
+            "message": "Partner creado correctamente"
+        }), 201
