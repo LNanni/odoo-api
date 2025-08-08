@@ -25,7 +25,7 @@ class InvoiceService(FatherService):
         except Exception as e:
             return ["Error: " + str(e)]
     
-    def createInvoices(self):
+    def createInvoices(self, params):
         try:
             uid = super().authenticate()
 
@@ -33,7 +33,8 @@ class InvoiceService(FatherService):
                 return ["Error: Autenticacion fallida"]
 
             mkwClient = MikrowispClient()
-            mkwInvoices = mkwClient.getInvoices()
+            mkwInvoices = mkwClient.getInvoices(params)
+            createdInvoices = 0
             for invoice in mkwInvoices:
                 partnerService = PartnerService()
                 partnerId = partnerService.getPartnerByName(invoice.get('nombre'))
@@ -43,8 +44,8 @@ class InvoiceService(FatherService):
                     continue
 
                 linesIds = []
-                for item in invoice:
-                    linesIds.append(jsonify({
+                for item in invoice.get('items'):
+                    linesIds.append({
                         'name': item.get('descripcion'),
                         'quantity': item.get('unidades'),
                         'price_unit': item.get('cantidad'),
@@ -52,19 +53,19 @@ class InvoiceService(FatherService):
                         'currency_id': 19,
                         'move_type': 'in_invoice',
                         'tax_ids': [81] #81 es IVA No Corresp
-                    }))
+                    })
 
                 try:
                     create_invoice = models.execute_kw(
                         self._Db, uid, self._Password,
                         'account.move', 'create',
                         [{
-                            'partner_id': 1,        # Dependera si es proveedor o cliente
+                            'partner_id': partnerId.get('id'),        # Dependera si es proveedor o cliente
                             'ref': invoice.get('nfactura'),
                             'currency_id': 19,      # 19 es ARS
                             'date': invoice.get('emitido'),
-                            'journal_id': 18,           # 18 es para Compras (18) o Ventas (17)
-                            'move_type': 'in_invoice',  #in_invoice o out_invoice
+                            'journal_id': 17,           # 18 es para Compras (18) o Ventas (17)
+                            'move_type': 'out_invoice',  #in_invoice o out_invoice
                             'state': 'draft',           #No se permite crear directamente en posted
                             'name': invoice.get('nombre'),
                             'display_name': invoice.get('nombre'),    #Repetir nombre de la factura
@@ -72,17 +73,18 @@ class InvoiceService(FatherService):
                             'invoice_date': invoice.get('emitido'),       #Repetir date
                             'l10n_latam_document_type_id': 6 if invoice.get('tipo') == "Servicios" else 1,   #1 es Factura A, 6 es Factura B
                             'l10n_latam_document_number': f'0001-{invoice.get('nfactura')}' if invoice.get('tipo') == "Servicios" else f'0002-{invoice.get('nfactura')}',     #0001 para Factura A, 0002 para Factura B. Repetir número de la factura
-                            'sequence_number': 3232,
+                            'sequence_number': invoice.get('legal'),
                             'invoice_line_ids': [
-                                (0, 0, linesIds)
+                                (0, 0, line) for line in linesIds
                             ]
                         }]
                     )
+                    createdInvoices += 1
                 except Exception as e:
                     print(str(e))
             return {
                 "status": "success",
-                "message": f"Se han creado {len(mkwInvoices)} facturas exitosamente"
+                "message": f"Se han recibido {len(mkwInvoices)} facturas. Se han creado {createdInvoices} facturas exitosamente"
             }
         except Exception as e:
             return {"error": str(e)}

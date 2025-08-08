@@ -1,6 +1,7 @@
 from typing import Any, Dict
 from dotenv import load_dotenv
 from app.models.endpoint import *
+from app.services.fatherService import FatherService
 
 class PartnerService(FatherService):
     def __init__(self):
