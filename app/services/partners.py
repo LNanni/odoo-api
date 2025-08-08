@@ -1,11 +1,6 @@
 from typing import Any, Dict
-import xmlrpc.client
-import os
 from dotenv import load_dotenv
 from app.models.endpoint import *
-from app.services.fatherService import FatherService
-
-load_dotenv()
 
 class PartnerService(FatherService):
     def __init__(self):
@@ -57,6 +52,11 @@ class PartnerService(FatherService):
     def createParner(self, body: Dict[str, Any]):
         try:
             uid = super().authenticate()
+
+            verifyNotExist = self.getPartnerByName(body.get('name'))
+            if(type(verifyNotExist) is dict):
+                return {"status":"error", "message": "Cliente ya existe en el sistema"}
+
             partnerCreated = models.execute_kw(
                     self._Db, uid, self._Password,
                     'res.partner', 'create',
@@ -86,6 +86,6 @@ class PartnerService(FatherService):
                         "display_name": body.get('name')
                     }]
                 )
-            return {"status": "Succes"}
+            return {"status": "Succes", "data": partnerCreated }
         except Exception as e:
             return {"status": "error", "message": str(e)}

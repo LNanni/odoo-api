@@ -1,12 +1,8 @@
-import xmlrpc.client
 from flask import jsonify
 from app.models.endpoint import *
 from app.services.fatherService import FatherService
 from app.services.partners import PartnerService
 from app.clients.mikrowisp import MikrowispClient
-from dotenv import load_dotenv
-
-load_dotenv()
 
 class InvoiceService(FatherService):
     def __init__(self):

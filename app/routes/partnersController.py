@@ -1,6 +1,3 @@
-import array
-from ctypes import Array
-from turtle import reset
 from flask import Blueprint, request, jsonify
 from werkzeug.wrappers import response
 from app.services.partners import PartnerService
@@ -73,6 +70,8 @@ def createPartner():
     if "error" in result.get('status'):
         if "solicitar acceso" in result.get('message'):
             return result, 401
+        elif "ya existe" in result.get('message'):
+            return result, 400
         else:
             return result, 500
     else:

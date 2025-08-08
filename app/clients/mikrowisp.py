@@ -31,7 +31,7 @@ class MikrowispClient:
         # Valores por defecto
         if params is None: params = {}
         
-        if params.get('p') is None: params['p'] = 1
+        if params.get('p') is None: params['p'] = 0
         if params.get('s') is None: params['s'] = 50
         if params.get('emitido_inicio') is None: params['emitido_inicio'] = date.today()
         if params.get('emitido_fin') is None: params['emitido_fin'] = date.today() + relativedelta(months=6)
