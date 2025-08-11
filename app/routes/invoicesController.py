@@ -28,6 +28,34 @@ def getAllInvoices():
                 "length": len(data)
             }), 200  
 
+@bp.route('/search', methods=['GET'])
+def getInvoiceByRef():
+    ref = request.args.get('ref', "##")
+    if(ref == "##" or not ref.isnumeric()):
+        return jsonify({
+            "status": "error",
+            "message": "Valor entero de ref es requerido"
+        }), 400
+
+    invoiceService = InvoiceService()
+    data = invoiceService.getInvoiceByRef(int(ref))
+    if(data is not list and "Error" in data):
+        response = jsonify({
+            "status": "error",
+            "message": data
+        })
+        if "solicitar acceso" in data:
+            return response, 401
+        else:
+            return response, 500
+    else:
+        return jsonify({
+            "status": "Ok",
+            "data": data,
+            "length": len(data)
+        })
+
+
 @bp.route('/', methods=['POST'])
 def createInvoices():
     params = {

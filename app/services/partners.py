@@ -27,7 +27,7 @@ class PartnerService(FatherService):
         except Exception as e:
             return ["Error: " + str(e)]
 
-    def getPartnerByName(self, name):
+    def getPartnerByName(self, name) -> Dict | list:
         try:
             uid = super().authenticate()
 
@@ -40,7 +40,7 @@ class PartnerService(FatherService):
                     [[  
                         ['name', 'ilike', name],
                     ]],  
-                    {'fields': ['id', 'name']}
+                    {'fields': ['id', 'name', 'company_type']}
                 )
 
             if len(listPartners) == 1:
@@ -62,6 +62,8 @@ class PartnerService(FatherService):
                     self._Db, uid, self._Password,
                     'res.partner', 'create',
                     [{
+                        #"city": body.get('city'),
+                        #"zip": body.get('cp'),
                         "vat_label": body.get('id_label'),
                         "company_type": body.get('company_type'),
                         "name": body.get('name'),
@@ -69,9 +71,7 @@ class PartnerService(FatherService):
                         "phone": body.get('phone'),
                         "type_address_label": "Dirección",
                         "street": body.get('location'),
-                        "city": body.get('city'),
                         "state_id": 570,
-                        "zip": body.get('cp'),
                         "country_id": 10,
                         "partner_vat_placeholder": "20055361682, o no aplicable",
                         "l10n_latam_identification_type_id": 6,

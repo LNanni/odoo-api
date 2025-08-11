@@ -1,3 +1,4 @@
+from typing import Dict, Any
 from flask import jsonify
 from app.models.endpoint import *
 from app.services.fatherService import FatherService
@@ -19,13 +20,30 @@ class InvoiceService(FatherService):
                 self._Db, uid, self._Password,
                 'account.move', 'search_read',
                 [[]],  # sin filtros
-                {'fields': ['name', 'date', 'state', 'amount_total']}
+                {'fields': ['name', 'date', 'state', 'amount_total', 'ref', 'transaction_ids']}
             )
             return list_invoices
         except Exception as e:
             return ["Error: " + str(e)]
     
-    def createInvoices(self, params):
+    def getInvoiceByRef(self, ref: int):
+        try:
+            uid = super().authenticate()
+            
+            if(type(uid) != int and "Autenticacion" in uid):
+                return "Error: Autenticacion fallida, solicitar acceso"
+
+            list_invoices = models.execute_kw(
+                self._Db, uid, self._Password,
+                'account.move', 'search_read',
+                [[['ref', '=', ref]]],  # sin filtros
+                {'fields': ['id', 'ref', 'date', 'amount_total']}
+            )
+            return list_invoices
+        except Exception as e:
+            return f"Error: {str(e)}"
+    
+    def createInvoices(self, params: Dict[str, Any]):
         try:
             uid = super().authenticate()
 
@@ -88,3 +106,28 @@ class InvoiceService(FatherService):
             }
         except Exception as e:
             return {"error": str(e)}
+
+    def payInvoice(self, invoiceRef: int, transactionId: int):
+        try:
+            uid = super().authenticate()
+            
+            if(type(uid) != int and "Autenticacion" in uid):
+                return "Error: Autenticacion fallida"
+
+            list_invoices = models.execute_kw(
+                self._Db, uid, self._Password,
+                'account.move', 'search_read',
+                [[['ref', '=', invoiceRef]]],  # sin filtros
+                {'fields': ['id']}
+            )
+            print(list_invoices)
+            update_invoices = models.execute_kw(
+                self._Db, uid, self._Password,
+                'account.move', 'write',
+                [[list_invoices], {
+                    'transaction_ids': [(4, 0, [item.get('id') for item in list_invoices])]
+                }]
+            )
+            return update_invoices
+        except Exception as e:
+            return f"Error: {str(e)}"
