@@ -14,8 +14,8 @@ app = create_app()
 
 if __name__ == '__main__':
     # Configuración para producción
-    host = os.getenv('FLASK_HOST', '0.0.0.0')
-    port = int(os.getenv('FLASK_PORT', 5000))
+    host = os.getenv('HOST')
+    port = int(os.getenv('PORT'))
     
     app.run(
         host=host,

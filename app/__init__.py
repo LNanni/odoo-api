@@ -1,6 +1,8 @@
-from flask import Flask
+from flask import Flask, request
 from flask_cors import CORS
 from app.config import get_config
+import logging
+
 
 def create_app():
     app = Flask(__name__)
@@ -9,6 +11,26 @@ def create_app():
     CORS(app)
 
     register_blueprints(app)
+
+    # Configuración de logs
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s [%(levelname)s] %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+
+    @app.before_request
+    def log_request_info():
+        logging.info(
+            f"Request: {request.remote_addr} {request.method} {request.path}"
+        )
+
+    @app.after_request
+    def log_response_info(response):
+        logging.info(
+            f"Response: {request.method} {request.path} -> {response.status}"
+        )
+        return response
 
     return app
 

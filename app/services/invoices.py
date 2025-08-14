@@ -90,7 +90,7 @@ class InvoiceService(FatherService):
                             'invoice_date_due': invoice.get('vencimiento'),
                             'invoice_date': invoice.get('emitido'),       #Repetir date
                             'l10n_latam_document_type_id': 6 if invoice.get('tipo') == "Servicios" else 1,   #1 es Factura A, 6 es Factura B
-                            'l10n_latam_document_number': f'0001-{invoice.get('nfactura')}' if invoice.get('tipo') == "Servicios" else f'0002-{invoice.get('nfactura')}',     #0001 para Factura A, 0002 para Factura B. Repetir número de la factura
+                            'l10n_latam_document_number': f'0001-{invoice.get("nfactura")}' if invoice.get("tipo") == "Servicios" else f'0002-{invoice.get("nfactura")}',     #0001 para Factura A, 0002 para Factura B. Repetir número de la factura
                             'sequence_number': invoice.get('legal'),
                             'invoice_line_ids': [
                                 (0, 0, line) for line in linesIds

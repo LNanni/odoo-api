@@ -1,0 +1,73 @@
+# Archivos de desarrollo
+.git
+.gitignore
+README.md
+*.md
+.env
+.env.local
+.env.development
+.env.test
+
+# Archivos de Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+
+# IDEs
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Archivos temporales
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Archivos de configuración local
+config/local/
+*.local
+
+# Archivos de Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Archivos de testing
+tests/
+test_*
+*_test.py
+
+# Archivos de documentación
+docs/
+*.rst
+# Excluir archivos .txt excepto requirements.txt
+*.txt
+!requirements.txt
+
+# Archivos de backup
+*.bak
+*.backup 
