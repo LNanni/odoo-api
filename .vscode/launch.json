@@ -1,0 +1,37 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug run.py (Flask)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run.py",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder}/.env",
+            "env": {
+            "PYTHONPATH": "${workspaceFolder}"
+            },
+            "justMyCode": true
+        },
+        {
+            "name": "Flask (flask run)",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "flask",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder}/.env",
+            "env": {
+                "FLASK_APP": "run.py",
+                "FLASK_ENV": "development",
+                "FLASK_RUN_HOST": "127.0.0.1",
+                "FLASK_RUN_PORT": "7070",
+                "PYTHONPATH": "${workspaceFolder}"
+        },
+            "args": ["run", "--no-debugger", "--no-reload"],
+            "jinja": true,
+            "justMyCode": true
+        }
+    ]
+}
