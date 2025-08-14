@@ -1,6 +1,5 @@
 import stat
 from typing import Dict, Any
-from uu import Error
 from app.models.endpoint import *
 from app.services.fatherService import FatherService
 from app.services.partners import PartnerService
@@ -70,10 +69,10 @@ class TransactionService(FatherService):
             invoiceUpdate = invoiceService.payInvoice(body.get('nfactura'), transactionCreated)
             """
             result = self.__paymentRegister(body, uid, invoicesIds, partner)
-            if type(result) != int:
+            if type(result.get('res_id', '')) != int:
                 raise ValueError(result)
 
-            return 1
+            return result
         except Exception as e:
             return f"Error: {str(e)}"
 
@@ -118,14 +117,15 @@ class TransactionService(FatherService):
                     raise ValueError(statementLineId)
             
             # Paso 4: Conciliar automáticamente
-            if statement_line_id:
-                reconciliation_result = self.__reconcileTransactions(uid, statementLineId, invoicesIds)
-                if type(reconciliation_result) != int:
+            """if statementLineId:
+                reconciliation_result = self.__reconcileTransactions(uid, statementLineId, invoicesIds, float(body.get('cobrado')))
+                if type(reconciliation_result) != str or "Error" in reconciliation_result:
                     print(f"Advertencia: {reconciliation_result}")
                 else:
-                    print("Transacciones conciliadas automáticamente")
+                    print("Transacciones conciliadas automáticamente")"""
             
             print("Pago creado exitosamente:", payment_result)
+            return payment_result
         
         except Exception as e:
             return f"Error al crear pago: {e}"
@@ -151,6 +151,7 @@ class TransactionService(FatherService):
                 "sequence": body.get('sequence', 1),  # Orden en el extracto
                 "account_number": body.get('account_number', 12),  # Número de cuenta (opcional)
                 "transaction_type": "customer",  # Tipo de transacción
+                "is_reconciled": True
             }
             
             # Crear línea de extracto bancario
@@ -206,10 +207,7 @@ class TransactionService(FatherService):
             # Fallback: usar extracto por defecto
             return -1
 
-    def __reconcileTransactions(self, uid: int, statement_line_id: int, invoicesIds: list) -> str:
-        """
-        Conciliar automáticamente las transacciones usando el método estándar de Odoo
-        """
+    """def __reconcileTransactions(self, uid: int, statement_line_id: int, invoicesIds: list, payment_amount: float) -> str:
         try:
             # Obtener la línea de extracto bancario
             statement_line = models.execute_kw(
@@ -223,6 +221,22 @@ class TransactionService(FatherService):
                 return "Error: No se encontró la línea de extracto bancario"
             
             line_data = statement_line[0]
+            
+            # Obtener información de las facturas para calcular el monto total
+            invoices_info = models.execute_kw(
+                self._Db, uid, self._Password,
+                'account.move', 'read',
+                [invoicesIds],
+                {'fields': ['id', 'amount_total', 'amount_residual', 'payment_state']}
+            )
+            
+            if not invoices_info:
+                return "Error: No se encontraron las facturas para conciliar"
+            
+            # Calcular el monto total de las facturas
+            total_invoice_amount = sum(invoice.get('amount_residual', 0) for invoice in invoices_info)
+            
+            print(f"Monto pagado: {payment_amount}, Monto total facturas: {total_invoice_amount}")
             
             # Buscar líneas de factura para conciliar
             invoice_lines = models.execute_kw(
@@ -238,6 +252,16 @@ class TransactionService(FatherService):
             
             if not invoice_lines:
                 return "Error: No se encontraron líneas de factura para conciliar"
+            
+            # Si el monto pagado es mayor al de las facturas, crear un crédito para el excedente
+            if payment_amount > total_invoice_amount:
+                excess_amount = payment_amount - total_invoice_amount
+                print(f"Creando crédito por excedente: {excess_amount}")
+                
+                # Crear una línea de crédito para el excedente
+                credit_line_id = self.__createCreditLine(uid, invoicesIds[0], excess_amount, partner_id=line_data.get('partner_id'))
+                if credit_line_id:
+                    print(f"Línea de crédito creada: {credit_line_id}")
             
             # Actualizar la línea de extracto bancario con la información de conciliación
             update_data = {
@@ -271,3 +295,65 @@ class TransactionService(FatherService):
             
         except Exception as e:
             return f"Error en conciliación automática: {str(e)}"
+
+    def __createCreditLine(self, uid: int, invoice_id: int, excess_amount: float, partner_id: int = None) -> int:
+        #Crea una línea de crédito para el excedente del pago
+        try:
+            # Obtener información de la factura para usar la misma cuenta
+            invoice_info = models.execute_kw(
+                self._Db, uid, self._Password,
+                'account.move', 'read',
+                [[invoice_id]],
+                {'fields': ['id', 'partner_id', 'journal_id', 'company_id']}
+            )
+            
+            if not invoice_info:
+                return None
+            
+            invoice_data = invoice_info[0]
+            
+            # Crear un asiento contable para el crédito
+            credit_move_vals = {
+                'ref': f'Crédito excedente pago factura {invoice_id}',
+                'journal_id': invoice_data.get('journal_id'),
+                'company_id': invoice_data.get('company_id'),
+                'partner_id': partner_id or invoice_data.get('partner_id'),
+                'date': models.fields.Date.today(),
+                'move_type': 'entry',
+                'line_ids': [
+                    (0, 0, {
+                        'account_id': 1,  # Cuenta de caja/bancos (ajustar según tu configuración)
+                        'debit': excess_amount,
+                        'credit': 0,
+                        'name': f'Crédito excedente pago factura {invoice_id}',
+                        'partner_id': partner_id or invoice_data.get('partner_id'),
+                    }),
+                    (0, 0, {
+                        'account_id': 2,  # Cuenta de clientes (ajustar según tu configuración)
+                        'debit': 0,
+                        'credit': excess_amount,
+                        'name': f'Crédito excedente pago factura {invoice_id}',
+                        'partner_id': partner_id or invoice_data.get('partner_id'),
+                    })
+                ]
+            }
+            
+            credit_move_id = models.execute_kw(
+                self._Db, uid, self._Password,
+                'account.move', 'create',
+                [credit_move_vals]
+            )
+            
+            # Publicar el asiento
+            models.execute_kw(
+                self._Db, uid, self._Password,
+                'account.move', 'action_post',
+                [[credit_move_id]]
+            )
+            
+            return credit_move_id
+            
+        except Exception as e:
+            print(f"Error al crear línea de crédito: {str(e)}")
+            return None
+        """
