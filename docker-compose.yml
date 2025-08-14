@@ -15,10 +15,12 @@ services:
       - PORT=7070
       
       # Configuración de Odoo (ajustar según tu entorno)
-      - ODOO_URL=https://onpower-ar.odoo.com/
-      - ODOO_DB=onpower-ar
-      - ODOO_USERNAME=ivan@onpower.com.ar
-      - ODOO_PASSWORD=Joiguti14...
+      - ODOO_URL=
+      - ODOO_DB=
+      - ODOO_USERNAME=
+      - ODOO_PASSWORD=
+      - MIKROWISPHELPER_URL=
+      - MIKROWISPHELPER_TOKEN=
       
       # Configuración de seguridad
       - SECRET_KEY=${SECRET_KEY:-your-secret-key-here}
